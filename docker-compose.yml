@@ -28,8 +28,8 @@ services:
   api:
     container_name: api
     volumes:
-      - ./:/home/dxluser/dxl
-    working_dir: /home/dxluser/dxl
+      - ./:/home/gojsuser/dxl
+    working_dir: /home/gojsuser/dxl
     build:
       dockerfile: Dockerfile.local
       context: .
@@ -49,10 +49,10 @@ services:
   ui:
     container_name: ui
     volumes:
-      - ./dxl_ui:/home/dxluser/ui
-    working_dir: /home/dxluser/ui
+      - ./dxl_ui:/home/gojsuser/ui
+    working_dir: /home/gojsuser/ui
     build: 
-      dockerfile: ./dxl_ui/Dockerfile.frontend
+      dockerfile: ./frontend/Dockerfile
       context: .
     ports:
       - 3000:3000
