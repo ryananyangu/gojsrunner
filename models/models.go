@@ -5,9 +5,10 @@ import (
 )
 
 type Request struct {
-	Headers   map[string]string `json:"headers" binding:"required"`
-	Payload   Payload           `json:"payload" binding:"required"`
-	Constants map[string]string `json:"constants" binding:"required"`
+	Headers       map[string]string `json:"headers" binding:"required"`
+	Payload       Payload           `json:"payload" binding:"required"`
+	Constants     map[string]string `json:"constants" binding:"required"`
+	ClientConfigs map[string]string `json:"client" binding:"required"`
 }
 
 type Payload struct {
@@ -17,6 +18,7 @@ type Payload struct {
 	Amount          string                 `json:"amount" binding:"required"`
 	CurrentDate     time.Time              `json:"currentDate" binding:"required"`
 	Narration       string                 `json:"narration" binding:"required"`
+	ClientCode      string                 `json:"clientCode" binding:"required"`
 	ISOCurrencyCode string                 `json:"ISOCurrencyCode" binding:"required"`
 	CustomerName    string                 `json:"customerName" binding:"required"`
 	PaymentMode     string                 `json:"paymentMode" binding:"required"`
