@@ -5,10 +5,10 @@ import (
 )
 
 type Request struct {
-	Headers       map[string]string `json:"headers" binding:"required"`
-	Payload       Payload           `json:"payload" binding:"required"`
-	Constants     map[string]string `json:"constants" binding:"required"`
-	ClientConfigs map[string]string `json:"client" binding:"required"`
+	Headers       map[string][]string `json:"headers" binding:"required"`
+	Payload       Payload             `json:"payload" binding:"required"`
+	Constants     map[string]string   `json:"constants" binding:"required"`
+	ClientConfigs map[string]string   `json:"AppSettings" binding:"required"`
 }
 
 type Payload struct {

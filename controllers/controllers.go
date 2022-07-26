@@ -15,8 +15,6 @@ import (
 
 func RequestTransformation(ctx *gin.Context) {
 
-	
-
 	service := ctx.Param("service")
 
 	request := models.Request{}
@@ -28,9 +26,10 @@ func RequestTransformation(ctx *gin.Context) {
 
 	jsctx := v8.NewContext()
 
-	scriptContent, err := utils.ReadFile(fmt.Sprintf("req_%s.js", service))
+	scriptContent, err := utils.ReadFile(fmt.Sprintf("wrapperscripts/req_%s.js", service))
 
 	if err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 
@@ -40,17 +39,20 @@ func RequestTransformation(ctx *gin.Context) {
 
 	constants, err := json.Marshal(request.Constants)
 	if err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	headers, err := json.Marshal(request.Headers)
 	if err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	payload, err := json.Marshal(request.Payload)
 
 	if err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -64,6 +66,7 @@ func RequestTransformation(ctx *gin.Context) {
 	// Execute main function
 	_, err = jsctx.RunScript(funcDataInject, "main.js")
 	if err != nil {
+		fmt.Println(err)
 		e := err.(*v8.JSError)
 		ctx.JSON(http.StatusBadRequest, models.RequestBuilt{
 			Error: models.Error{
@@ -78,6 +81,7 @@ func RequestTransformation(ctx *gin.Context) {
 	// Capture result from the function ran
 	val, err := jsctx.RunScript("response", "value.js")
 	if err != nil {
+		fmt.Println(err)
 		e := err.(*v8.JSError)
 		ctx.JSON(http.StatusBadRequest, models.RequestBuilt{
 			Error: models.Error{
