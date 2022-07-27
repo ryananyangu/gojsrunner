@@ -15,4 +15,7 @@ var Routes = map[string]map[string]gin.HandlerFunc{
 	basePath + "/process/response/:service": {
 		"POST": controllers.ResponseTransformation,
 	},
+	basePath + "/test": {
+		"GET": controllers.TestApi,
+	},
 }

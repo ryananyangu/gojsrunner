@@ -19,7 +19,7 @@ func init() {
 		})
 	logrus.SetOutput(os.Stderr)
 	logrus.SetReportCaller(true)
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.ErrorLevel)
 }
 
 //Log to file
@@ -32,7 +32,7 @@ func LogrusLogger() gin.HandlerFunc {
 	logger.Out = os.Stderr
 
 	//Set log level
-	logger.SetLevel(logrus.DebugLevel)
+	logger.SetLevel(logrus.ErrorLevel)
 
 	//Format log
 	logger.SetFormatter(&logrus.JSONFormatter{

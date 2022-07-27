@@ -3,6 +3,7 @@ package services
 import (
 	b64 "encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	"github.com/ryananyangu/gojsrunner/utils"
 	"rogchap.com/v8go"
@@ -15,8 +16,9 @@ func RunCode() *v8go.Context {
 	global := v8go.NewObjectTemplate(vm)
 
 	// FIXME: Request to be an exact simulation of fetch
-	global.Set("request", CustomFetch)
-	global.Set("btoa", CustomBtoa)
+	global.Set("request", CustomFetch(vm), v8go.ReadOnly)
+	global.Set("btoa", CustomBtoa(vm), v8go.ReadOnly)
+	global.Set("log", CustomLog(vm), v8go.ReadOnly)
 
 	return v8go.NewContext(vm, global)
 }
@@ -64,4 +66,20 @@ func CustomFetch(vm *v8go.Isolate) *v8go.FunctionTemplate {
 	})
 
 	return fetchFn
+}
+
+func CustomLog(vm *v8go.Isolate) *v8go.FunctionTemplate {
+
+	logFn := v8go.NewFunctionTemplate(vm, func(info *v8go.FunctionCallbackInfo) *v8go.Value {
+
+		args := info.Args()
+		logdata := args[0].String()
+
+		fmt.Println(logdata)
+		return nil
+
+	})
+
+	return logFn
+
 }
