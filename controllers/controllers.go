@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
 	"net/http"
 
+	// log "github.com/sirupsen/logrus"
 	v8 "rogchap.com/v8go"
 
+	// "github.com/alt4dev/go/log"
 	"github.com/gin-gonic/gin"
 	"github.com/ryananyangu/gojsrunner/models"
+	"github.com/ryananyangu/gojsrunner/services"
 	"github.com/ryananyangu/gojsrunner/utils"
 )
 
@@ -24,9 +28,11 @@ func RequestTransformation(ctx *gin.Context) {
 		return
 	}
 
-	jsctx := v8.NewContext()
+	jsctx := services.RunCode()
 
-	scriptContent, err := utils.ReadFile(fmt.Sprintf("wrapperscripts/req_%s.js", service))
+	scriptfile := fmt.Sprintf("req_%s.js", service)
+
+	scriptContent, err := utils.ReadFile("wrapperscripts/" + scriptfile)
 
 	if err != nil {
 		fmt.Println(err)
@@ -35,7 +41,7 @@ func RequestTransformation(ctx *gin.Context) {
 
 	}
 
-	jsctx.RunScript(scriptContent, "main.js")
+	jsctx.RunScript(scriptContent, scriptfile)
 
 	constants, err := json.Marshal(request.Constants)
 	if err != nil {

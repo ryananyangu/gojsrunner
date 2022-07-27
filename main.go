@@ -5,10 +5,12 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ryananyangu/gojsrunner/utils"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	r.Use(utils.LogrusLogger())
 	r.Use(gin.Recovery())
 
 	for path, handlers := range Routes {
