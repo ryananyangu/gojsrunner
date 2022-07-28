@@ -96,7 +96,8 @@ func ResponseTransformation(ctx *gin.Context) {
 		return
 	}
 
-	jsctx := v8.NewContext()
+	jsctx := services.RunCode()
+	defer jsctx.Isolate().Dispose()
 	scriptFile := fmt.Sprintf("res_%s.js", service)
 	scriptContent, err := utils.ReadFile(scriptFile)
 
@@ -134,10 +135,10 @@ func TestApi(ctx2 *gin.Context) {
 	defer ctx.Isolate().Dispose()
 	val, err1 := ctx.RunScript(`send('','{"Content-Type" : ["application/json"]}','https://dummy.restapiexample.com/api/v1/employee/1','GET')`, "print.js")
 
-	if err1 != nil {
-		ctx2.JSON(http.StatusBadRequest, err1)
+	if err1 != nil || val.String() == "undefined" || val == nil {
+		ctx2.JSON(http.StatusBadRequest, "Failed to fetch response")
 		return
 	}
-	res, _ := val.Object().MarshalJSON()
-	ctx2.JSON(http.StatusOK, string(res))
+
+	ctx2.JSON(http.StatusOK, val.Object())
 }

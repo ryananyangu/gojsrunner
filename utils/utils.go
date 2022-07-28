@@ -53,6 +53,7 @@ func Request(request string, headers map[string][]string, urlPath string, method
 	}
 
 	data, _ := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
 
 	Log.Infof("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)
 
@@ -60,8 +61,6 @@ func Request(request string, headers map[string][]string, urlPath string, method
 		Log.Errorf("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)
 		return res.Status, fmt.Errorf("%d | %s", res.StatusCode, data)
 	}
-
-	res.Body.Close()
 
 	resbody := string(data)
 	Log.Infof("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, resbody, res.Status, res.StatusCode)
