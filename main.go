@@ -42,7 +42,7 @@ func main() {
 	port := os.Getenv("PORT")
 
 	if port == "" {
-		port = "8081"
+		port = "8080"
 	}
 
 	gin_instance.Run(fmt.Sprintf(":%s", port))

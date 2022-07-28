@@ -131,11 +131,13 @@ func ResponseTransformation(ctx *gin.Context) {
 func TestApi(ctx2 *gin.Context) {
 	ctx := services.RunCode()
 	defer ctx.Isolate().Dispose()
-	_, err1 := ctx.RunScript("send('data')", "print.js")
+	//
+	// payload, headers, url, method
+	val, err1 := ctx.RunScript(`send('',{"Content-Type" : "application/json"},'https://dummy.restapiexample.com/api/v1/employee/1','GET')`, "print.js")
 
 	if err1 != nil {
 		ctx2.JSON(http.StatusBadRequest, err1)
 		return
 	}
-	ctx2.JSON(http.StatusOK, "val")
+	ctx2.JSON(http.StatusOK, val)
 }
