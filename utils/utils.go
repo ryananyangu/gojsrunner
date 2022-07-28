@@ -69,7 +69,6 @@ func Request(request string, headers map[string][]string, urlPath string, method
 }
 
 func ExternalRequestTimer(req *http.Request) (*http.Response, error) {
-	// req, _ := http.NewRequest("GET", url, nil)
 
 	var start, connect, dns, tlsHandshake time.Time
 

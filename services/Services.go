@@ -72,9 +72,9 @@ func CustomLog(vm *v8go.Isolate) *v8go.FunctionTemplate {
 	logFn := v8go.NewFunctionTemplate(vm, func(info *v8go.FunctionCallbackInfo) *v8go.Value {
 
 		args := info.Args()
-		logdata := args[0].Object()
+		logdata := args[0].String()
 
-		fmt.Printf("[JS_SCRIPT]-> %+v", logdata)
+		fmt.Println("[JS_SCRIPT]-> " + logdata)
 		return nil
 
 	})

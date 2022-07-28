@@ -63,7 +63,7 @@ func RequestTransformation(ctx *gin.Context) {
 	}
 
 	// Build script call by inserting variable
-	funcDataInject := fmt.Sprintf(`main(%s, %s,%s)`,
+	funcDataInject := fmt.Sprintf(`main(%s, %s,%s,{})`,
 		string(payload[:]),
 		string(headers[:]),
 		string(constants[:]))
