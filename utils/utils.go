@@ -58,7 +58,7 @@ func Request(request string, headers map[string][]string, urlPath string, method
 
 	if res.StatusCode > 299 || res.StatusCode <= 199 {
 		Log.Errorf("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)
-		return res.Status, fmt.Errorf("%d", res.StatusCode)
+		return res.Status, fmt.Errorf("%d | %s", res.StatusCode, data)
 	}
 
 	res.Body.Close()

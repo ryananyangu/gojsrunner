@@ -55,6 +55,7 @@ func CustomFetch(vm *v8go.Isolate) *v8go.FunctionTemplate {
 		}
 
 		goResponse, err := utils.Request(payload, headers, url, method)
+		utils.Log.Error(err)
 		if err != nil {
 			response, _ := json.Marshal(map[string]string{
 				"error": err.Error(),
