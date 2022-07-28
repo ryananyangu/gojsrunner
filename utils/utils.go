@@ -10,8 +10,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func ReadFile(file string) (string, error) {
@@ -50,23 +48,23 @@ func Request(request string, headers map[string][]string, urlPath string, method
 	res, err := ExternalRequestTimer(req)
 	if err != nil {
 		// log http error
-		log.Errorf("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | ERROR : %v", urlPath, method, request, err)
+		Log.Errorf("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | ERROR : %v", urlPath, method, request, err)
 		return "", err
 	}
 
 	data, _ := ioutil.ReadAll(res.Body)
 
-	log.Infof("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)
+	Log.Infof("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)
 
 	if res.StatusCode > 299 || res.StatusCode <= 199 {
-		log.Errorf("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)
+		Log.Errorf("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)
 		return res.Status, fmt.Errorf("%d", res.StatusCode)
 	}
 
 	res.Body.Close()
 
 	resbody := string(data)
-	log.Infof("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, resbody, res.Status, res.StatusCode)
+	Log.Infof("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, resbody, res.Status, res.StatusCode)
 
 	return resbody, nil
 }
@@ -79,21 +77,21 @@ func ExternalRequestTimer(req *http.Request) (*http.Response, error) {
 	trace := &httptrace.ClientTrace{
 		DNSStart: func(dsi httptrace.DNSStartInfo) { dns = time.Now() },
 		DNSDone: func(ddi httptrace.DNSDoneInfo) {
-			log.Infof("DNS Done: %v\n", time.Since(dns))
+			Log.Infof("DNS Done: %v\n", time.Since(dns))
 		},
 
 		TLSHandshakeStart: func() { tlsHandshake = time.Now() },
 		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
-			log.Infof("TLS Handshake: %v\n", time.Since(tlsHandshake))
+			Log.Infof("TLS Handshake: %v\n", time.Since(tlsHandshake))
 		},
 
 		ConnectStart: func(network, addr string) { connect = time.Now() },
 		ConnectDone: func(network, addr string, err error) {
-			log.Infof("Connect time: %v\n", time.Since(connect))
+			Log.Infof("Connect time: %v\n", time.Since(connect))
 		},
 
 		GotFirstResponseByte: func() {
-			log.Infof("Time from start to first byte: %v\n", time.Since(start))
+			Log.Infof("Time from start to first byte: %v\n", time.Since(start))
 		},
 	}
 

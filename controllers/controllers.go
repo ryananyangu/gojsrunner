@@ -133,11 +133,13 @@ func TestApi(ctx2 *gin.Context) {
 	defer ctx.Isolate().Dispose()
 	//
 	// payload, headers, url, method
-	val, err1 := ctx.RunScript(`send('',{"Content-Type" : "application/json"},'https://dummy.restapiexample.com/api/v1/employee/1','GET')`, "print.js")
+	val, err1 := ctx.RunScript(`send('','{"Content-Type" : "application/json"}','https://dummy.restapiexample.com/api/v1/employee/1','GET')`, "print.js")
 
-	if err1 != nil {
+	if err1 != nil || val.IsString() {
+		utils.Log.Error(val)
 		ctx2.JSON(http.StatusBadRequest, err1)
 		return
 	}
+
 	ctx2.JSON(http.StatusOK, val)
 }
