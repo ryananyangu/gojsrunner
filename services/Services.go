@@ -43,14 +43,17 @@ func CustomFetch(vm *v8go.Isolate) *v8go.FunctionTemplate {
 		args := info.Args()
 		payload := args[0].String()
 		headers := map[string][]string{}
-		url := args[2].String()
+		url := args[1].String()
 		method := args[3].String()
 
-		if err := json.Unmarshal([]byte(args[1].String()), &headers); err != nil {
-			response, _ := json.Marshal(map[string]string{
+		if err := json.Unmarshal([]byte(args[2].String()), &headers); err != nil {
+			response, err2 := json.Marshal(map[string]string{
 				"error": err.Error(),
 			})
-			val, _ := v8go.NewValue(vm, response)
+			val, err1 := v8go.NewValue(vm, response)
+			utils.Log.Error(err)
+			utils.Log.Error(err1)
+			utils.Log.Error(err2)
 			return val
 		}
 
@@ -74,7 +77,7 @@ func CustomLog(vm *v8go.Isolate) *v8go.FunctionTemplate {
 		args := info.Args()
 		logdata := args[0].String()
 
-		fmt.Println("[JS_SCRIPT]-> " + logdata)
+		fmt.Println("[JS_SCRIPT]\t" + logdata)
 		return nil
 
 	})

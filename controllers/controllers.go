@@ -133,12 +133,23 @@ func ResponseTransformation(ctx *gin.Context) {
 func TestApi(ctx2 *gin.Context) {
 	ctx := services.RunCode()
 	defer ctx.Isolate().Dispose()
-	val, err1 := ctx.RunScript(`send('','{"Content-Type" : ["application/json"]}','https://dummy.restapiexample.com/api/v1/employee/1','GET')`, "print.js")
+	jscode := `const data = (request) => { 
+		log(JSON.stringify(request)); 
+		let res = send(request.data,request.url,JSON.stringify(request.headers),request.method); 
+		return res;
+		}`
+	request := `{"data":"","url":"https://dummy.restapiexample.com/api/v1/employee/1","headers":{"Content-Type" : ["application/json"]},"method":"GET"}`
+	_, err1 := ctx.RunScript(jscode, "print.js")
 
-	if err1 != nil || val.String() == "undefined" || val == nil {
-		ctx2.JSON(http.StatusBadRequest, "Failed to fetch response")
+	if err1 != nil {
+		ctx2.JSON(http.StatusBadRequest, err1)
 		return
 	}
-
-	ctx2.JSON(http.StatusOK, val.Object())
+	val, err := ctx.RunScript(fmt.Sprintf(`data(%s)`, request), "main.js")
+	if err != nil {
+		ctx2.JSON(http.StatusBadRequest, err1)
+		return
+	}
+	utils.Log.Error(val)
+	ctx2.JSON(http.StatusOK, "val")
 }
