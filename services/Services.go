@@ -16,7 +16,7 @@ func RunCode() *v8go.Context {
 	global := v8go.NewObjectTemplate(vm)
 
 	// FIXME: Request to be an exact simulation of fetch
-	global.Set("request", CustomFetch(vm), v8go.ReadOnly)
+	global.Set("send", CustomFetch(vm), v8go.ReadOnly)
 	global.Set("btoa", CustomBtoa(vm), v8go.ReadOnly)
 	global.Set("log", CustomLog(vm), v8go.ReadOnly)
 

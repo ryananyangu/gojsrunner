@@ -96,8 +96,8 @@ func ResponseTransformation(ctx *gin.Context) {
 	}
 
 	jsctx := v8.NewContext()
-
-	scriptContent, err := utils.ReadFile(fmt.Sprintf("res_%s.js", service))
+	scriptFile := fmt.Sprintf("res_%s.js", service)
+	scriptContent, err := utils.ReadFile(scriptFile)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -105,27 +105,13 @@ func ResponseTransformation(ctx *gin.Context) {
 
 	}
 
-	jsctx.RunScript(scriptContent, "main.js")
+	jsctx.RunScript(scriptContent, scriptFile)
 
-	funcDataInject := fmt.Sprintf(`const response = main(%s)`,
+	funcDataInject := fmt.Sprintf(`main(%s)`,
 		string(body[:]))
 
 	// Execute main function
-	_, err = jsctx.RunScript(funcDataInject, "main.js")
-	if err != nil {
-		e := err.(*v8.JSError)
-		ctx.JSON(http.StatusBadRequest, models.RequestBuilt{
-			Error: models.Error{
-				Message:    e.Message,
-				Location:   e.Location,
-				StackTrace: e.StackTrace,
-			},
-		})
-		return
-	}
-
-	// Capture result from the function ran
-	val, err := jsctx.RunScript("response", "value.js")
+	val, err := jsctx.RunScript(funcDataInject, scriptFile)
 	if err != nil {
 		e := err.(*v8.JSError)
 		ctx.JSON(http.StatusBadRequest, models.RequestBuilt{
@@ -145,7 +131,7 @@ func ResponseTransformation(ctx *gin.Context) {
 func TestApi(ctx2 *gin.Context) {
 	ctx := services.RunCode()
 	defer ctx.Isolate().Dispose()
-	_, err1 := ctx.RunScript("log('data')", "print.js")
+	_, err1 := ctx.RunScript("send('data')", "print.js")
 
 	if err1 != nil {
 		ctx2.JSON(http.StatusBadRequest, err1)
