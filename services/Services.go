@@ -41,11 +41,12 @@ func CustomBtoa(vm *v8go.Isolate) *v8go.FunctionTemplate {
 func CustomFetch(vm *v8go.Isolate) *v8go.FunctionTemplate {
 	fetchFn := v8go.NewFunctionTemplate(vm, func(info *v8go.FunctionCallbackInfo) *v8go.Value {
 		args := info.Args()
-		url := args[0].String()
-		method := args[1].String()
-		payload := args[2].String()
+		payload := args[0].String()
 		headers := map[string][]string{}
-		if err := json.Unmarshal([]byte(args[3].String()), &headers); err != nil {
+		url := args[2].String()
+		method := args[3].String()
+
+		if err := json.Unmarshal([]byte(args[1].String()), &headers); err != nil {
 			response, _ := json.Marshal(map[string]string{
 				"error": err.Error(),
 			})

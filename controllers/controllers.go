@@ -147,24 +147,9 @@ func TestApi(ctx2 *gin.Context) {
 	defer ctx.Isolate().Dispose()
 	_, err1 := ctx.RunScript("log('data')", "print.js")
 
-	// _, err1 := ctx.RunScript("const main = (data) => { log(data)}", "print.js")
-
 	if err1 != nil {
 		ctx2.JSON(http.StatusBadRequest, err1)
 		return
 	}
-
-	// val, err := ctx.RunScript(fmt.Sprintf(`main('%s')`, "My data is this"), "response.js")
-	// if err != nil {
-	// 	ctx2.JSON(http.StatusBadRequest, err)
-	// 	return
-	// }
-	// utils.Log.Info(val)
 	ctx2.JSON(http.StatusOK, "val")
 }
-
-// {
-//     "Message": "ReferenceError: log is not defined",
-//     "Location": "print.js:1:26",
-//     "StackTrace": "ReferenceError: log is not defined\n    at main (print.js:1:26)\n    at response.js:1:1"
-// }
