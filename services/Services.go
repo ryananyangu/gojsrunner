@@ -50,7 +50,7 @@ func CustomFetch(vm *v8go.Isolate) *v8go.FunctionTemplate {
 			response, err2 := json.Marshal(map[string]string{
 				"error": err.Error(),
 			})
-			val, err1 := v8go.NewValue(vm, response)
+			val, err1 := v8go.NewValue(vm, []byte(response))
 			utils.Log.Error(err)
 			utils.Log.Error(err1)
 			utils.Log.Error(err2)
