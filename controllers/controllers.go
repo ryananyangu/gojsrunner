@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 
 	"net/http"
 
@@ -83,15 +82,10 @@ func RequestTransformation(ctx *gin.Context) {
 func ResponseTransformation(ctx *gin.Context) {
 
 	service := ctx.Param("service")
+	response := map[string]interface{}{}
 
-	ioRead, err := ctx.Request.GetBody()
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	body, err := ioutil.ReadAll(ioRead)
-	if err != nil {
+	if err := ctx.ShouldBindJSON(&response); err != nil {
+		utils.Log.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -99,15 +93,20 @@ func ResponseTransformation(ctx *gin.Context) {
 	jsctx := services.RunCode()
 	defer jsctx.Isolate().Dispose()
 	scriptFile := fmt.Sprintf("res_%s.js", service)
-	scriptContent, err := utils.ReadFile(scriptFile)
+	scriptContent, err := utils.ReadFile("wrapperscripts/" + scriptFile)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 
 	}
-
 	jsctx.RunScript(scriptContent, scriptFile)
+	body, err := json.Marshal(response)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+
+	}
 
 	funcDataInject := fmt.Sprintf(`main(%s)`,
 		string(body[:]))
