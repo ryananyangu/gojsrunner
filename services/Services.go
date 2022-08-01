@@ -1,6 +1,7 @@
 package services
 
 import (
+	"crypto/sha256"
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -19,6 +20,7 @@ func RunCode() *v8go.Context {
 	global.Set("send", CustomFetch(vm), v8go.ReadOnly)
 	global.Set("btoa", CustomBtoa(vm), v8go.ReadOnly)
 	global.Set("log", CustomLog(vm), v8go.ReadOnly)
+	global.Set("SHA256", CustomSHA256(vm), v8go.ReadOnly)
 
 	return v8go.NewContext(vm, global)
 }
@@ -83,5 +85,20 @@ func CustomLog(vm *v8go.Isolate) *v8go.FunctionTemplate {
 	})
 
 	return logFn
+
+}
+
+func CustomSHA256(vm *v8go.Isolate) *v8go.FunctionTemplate {
+
+	sha256Fn := v8go.NewFunctionTemplate(vm, func(info *v8go.FunctionCallbackInfo) *v8go.Value {
+		args := info.Args()
+		str2encode := args[0].String()
+		hash := sha256.Sum256([]byte(str2encode))
+		val, _ := v8go.NewValue(vm, string(hash[:]))
+		return val
+
+	})
+
+	return sha256Fn
 
 }
