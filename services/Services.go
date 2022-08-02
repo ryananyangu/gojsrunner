@@ -94,7 +94,8 @@ func CustomSHA256(vm *v8go.Isolate) *v8go.FunctionTemplate {
 		args := info.Args()
 		str2encode := args[0].String()
 		hash := sha256.Sum256([]byte(str2encode))
-		val, _ := v8go.NewValue(vm, string(hash[:]))
+		encoded := b64.StdEncoding.EncodeToString(hash[:])
+		val, _ := v8go.NewValue(vm, encoded)
 		return val
 
 	})

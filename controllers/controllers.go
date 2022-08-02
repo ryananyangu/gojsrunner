@@ -6,12 +6,14 @@ import (
 
 	"net/http"
 
-	v8 "rogchap.com/v8go"
+	"crypto/sha256"
+	b64 "encoding/base64"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ryananyangu/gojsrunner/models"
 	"github.com/ryananyangu/gojsrunner/services"
 	"github.com/ryananyangu/gojsrunner/utils"
+	v8 "rogchap.com/v8go"
 )
 
 func RequestTransformation(ctx *gin.Context) {
@@ -130,25 +132,24 @@ func ResponseTransformation(ctx *gin.Context) {
 }
 
 func TestApi(ctx2 *gin.Context) {
-	ctx := services.RunCode()
-	defer ctx.Isolate().Dispose()
-	jscode := `const data = (request) => { 
-		log(JSON.stringify(request)); 
-		let res = send(request.data,request.url,JSON.stringify(request.headers),request.method); 
-		return res;
-		}`
-	request := `{"data":"","url":"https://dummy.restapiexample.com/api/v1/employee/1","headers":{"Content-Type" : ["application/json"]},"method":"GET"}`
-	_, err1 := ctx.RunScript(jscode, "print.js")
+	year := "2022"
+	month := "08"
+	day := "02"
+	hrs := "06"
+	mins := "35"
+	secs := "56"
+	noncetime := year + month + day + hrs + mins + secs //`20220802063556`
+	str := []byte(noncetime)
 
-	if err1 != nil {
-		ctx2.JSON(http.StatusBadRequest, err1)
-		return
-	}
-	val, err := ctx.RunScript(fmt.Sprintf(`data(%s)`, request), "main.js")
-	if err != nil {
-		ctx2.JSON(http.StatusBadRequest, err1)
-		return
-	}
-	utils.Log.Error(val)
-	ctx2.JSON(http.StatusOK, "val")
+	nonce := b64.StdEncoding.EncodeToString(str)
+	rawStr := fmt.Sprintf("%s%s-%s-%sT%s:%s:%sZSdpita@20!@", nonce, year, month, day, hrs, mins, secs)
+	SHA256 := sha256.Sum256([]byte(rawStr))
+	base64 := b64.StdEncoding.EncodeToString(SHA256[:])
+
+	// rawStr := nonce + timespan + AppSecret
+	ctx2.JSON(http.StatusOK, map[string]interface{}{
+		"nonce":  nonce,
+		"rawStr": rawStr,
+		"base64": base64,
+	})
 }
