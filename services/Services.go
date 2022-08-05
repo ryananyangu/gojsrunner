@@ -1,10 +1,15 @@
 package services
 
 import (
+	"context"
 	"crypto/sha256"
 	b64 "encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/ryananyangu/gojsrunner/utils"
 	"rogchap.com/v8go"
@@ -101,5 +106,38 @@ func CustomSHA256(vm *v8go.Isolate) *v8go.FunctionTemplate {
 	})
 
 	return sha256Fn
+
+}
+
+func PublishPaymentAck(request []byte) error {
+
+	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
+	connectRabbitMQ, err := amqp.Dial(amqpServerURL)
+	if err != nil {
+		utils.Log.Error(err)
+		return err
+	}
+	defer connectRabbitMQ.Close()
+
+	channelRabbitMQ, err := connectRabbitMQ.Channel()
+	if err != nil {
+		utils.Log.Error(err)
+		return err
+	}
+	defer channelRabbitMQ.Close()
+
+	// FIXME: Q Params to be setup on envfile
+	errStr := channelRabbitMQ.PublishWithContext(context.Background(), "mobile.payments.ack",
+		"",    // routing key
+		false, // mandatory
+		false, // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        request,
+		}).Error()
+	if errStr != "" {
+		return errors.New(errStr)
+	}
+	return nil
 
 }

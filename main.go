@@ -11,8 +11,7 @@ import (
 )
 
 func main() {
-	utils.Log.Info(os.Getenv("AMQP_SERVER_URL"))
-	connectRabbitMQ, err := amqp.Dial("amqp://myuser:mypassword@172.17.0.1:5672/")
+	connectRabbitMQ, err := amqp.Dial(os.Getenv("AMQP_SERVER_URL"))
 	if err != nil {
 		utils.Log.Error(err)
 		// return err
@@ -41,18 +40,18 @@ func main() {
 
 	var forever chan struct{}
 
-	for d := range msgs {
-		go func(d amqp.Delivery) {
+	go func() {
+		for d := range msgs {
 			request := models.Request{}
 			if err := json.Unmarshal(d.Body, &request); err != nil {
 				// Will not have acknowledge hence messages will still be on queue
-				utils.Log.Error(err)
+				utils.Log.Error(err, d.Body)
+				continue
 			}
 			controllers.RequestTransformation(&request)
 			d.Ack(false)
-			// d.Acknowledger.Ack(true)
-		}(d)
-	}
+		}
+	}()
 
 	utils.Log.Printf(" [*] Waiting for logs. To exit press CTRL+C")
 	<-forever

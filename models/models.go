@@ -71,7 +71,7 @@ type Error struct {
 
 // Returned request from JS Script
 type RequestBuilt struct {
-	Payload string            `json:"payload" binding:"payload"`
-	Headers map[string]string `json:"headers" binding:"required"`
-	Error   Error             `json:"error" binding:"-"`
+	Payload string              `json:"payload" binding:"payload"`
+	Headers map[string][]string `json:"headers" binding:"required"`
+	Error   string              `json:"error" binding:"-"`
 }

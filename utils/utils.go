@@ -101,3 +101,9 @@ func ExternalRequestTimer(req *http.Request) (*http.Response, error) {
 	}
 	return res, nil
 }
+
+func init() {
+	if os.Getenv("AMQP_SERVER_URL") == "" {
+		Log.Fatal("Amq url not loaded")
+	}
+}
