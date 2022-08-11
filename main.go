@@ -29,14 +29,17 @@ func main() {
 	msgs, err := channelRabbitMQ.Consume(
 		"paymentsTpQ", // queue
 		"",            // consumer
-		true,          // auto-ack
+		false,         // auto-ack
 		false,         // exclusive
 		false,         // no-local
 		false,         // no-wait
 		nil,           // args
 	)
 
-	utils.Log.Info(err)
+	if err != nil {
+		utils.Log.Error(err)
+		// return err
+	}
 
 	var forever chan struct{}
 
@@ -48,7 +51,10 @@ func main() {
 				utils.Log.Error(err, d.Body)
 				continue
 			}
-			controllers.RequestTransformation(&request)
+			if err := controllers.RequestTransformation(&request); err != nil {
+				utils.Log.Error(err)
+				continue
+			}
 			d.Ack(false)
 		}
 	}()

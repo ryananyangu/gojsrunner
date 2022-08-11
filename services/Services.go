@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	b64 "encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -127,17 +126,15 @@ func PublishPaymentAck(request []byte) error {
 	defer channelRabbitMQ.Close()
 
 	// FIXME: Q Params to be setup on envfile
-	errStr := channelRabbitMQ.PublishWithContext(context.Background(), "mobile.payments.ack",
+	channelRabbitMQ.PublishWithContext(context.Background(), "mobile.payments.ack",
 		"",    // routing key
 		false, // mandatory
 		false, // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        request,
-		}).Error()
-	if errStr != "" {
-		return errors.New(errStr)
-	}
+		})
+
 	return nil
 
 }

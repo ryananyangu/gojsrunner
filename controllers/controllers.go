@@ -9,7 +9,7 @@ import (
 	"github.com/ryananyangu/gojsrunner/utils"
 )
 
-func RequestTransformation(request *models.Request) {
+func RequestTransformation(request *models.Request) error {
 
 	// Initiate js vm
 	jsctx := services.RunCode()
@@ -22,7 +22,7 @@ func RequestTransformation(request *models.Request) {
 	scriptContent, err := utils.ReadFile("wrapperscripts/" + scriptfile)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 
 	}
 
@@ -31,24 +31,24 @@ func RequestTransformation(request *models.Request) {
 	constants, err := json.Marshal(request.ClientInfo.Statics)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 	headers, err := json.Marshal(request.ClientInfo.Headers)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 	payload, err := json.Marshal(request.Transaction)
 
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 	settings, err := json.Marshal(request.ClientInfo.Settings)
 
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// Build string to js function call
@@ -61,22 +61,22 @@ func RequestTransformation(request *models.Request) {
 	val, err := jsctx.RunScript(funcDataInject, scriptfile)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// json encode the js script response
 	reqScriptRes, err := val.MarshalJSON()
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// cast the response to a valid struct
 	builtRequest := models.RequestBuilt{}
 	err = json.Unmarshal(reqScriptRes, &builtRequest)
-	if err != nil {
+	if err != nil || builtRequest.Error != "" {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// Send the main service request
@@ -86,7 +86,7 @@ func RequestTransformation(request *models.Request) {
 		request.ClientInfo.HTTPMethod)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// FIXME: Handle xml based transformation to map here
@@ -94,7 +94,7 @@ func RequestTransformation(request *models.Request) {
 	response := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(serviceResponse), &response); err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	//
@@ -104,38 +104,42 @@ func RequestTransformation(request *models.Request) {
 	resScriptContent, err := utils.ReadFile("wrapperscripts/" + ResScriptFile)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 
 	}
 
-	jsctx.RunScript(resScriptContent, ResScriptFile)
+	jsctx2 := services.RunCode()
+	defer jsctx2.Isolate().Dispose()
+
+	jsctx2.RunScript(resScriptContent, ResScriptFile)
 
 	// Pass the services response to function FIXME: Only works for json for now
 	resInjectScript := fmt.Sprintf(`main(%s)`, serviceResponse)
 
 	// Execute main function
-	resVal, err := jsctx.RunScript(resInjectScript, ResScriptFile)
+	resVal, err := jsctx2.RunScript(resInjectScript, ResScriptFile)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// get json of script response
 	finalres, err := resVal.MarshalJSON()
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// Cast response to struct to make sure to malformation of the response [Validation]
 	requestresp := models.Response{}
+	utils.Log.Error(string(finalres[:]))
 	err = json.Unmarshal(finalres, &requestresp)
 	if err != nil {
 		utils.Log.Error(err)
-		return
+		return err
 	}
 
 	// Publish to ack Queue
-	services.PublishPaymentAck(finalres)
+	return services.PublishPaymentAck(finalres)
 
 }
