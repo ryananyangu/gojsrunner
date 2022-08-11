@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	b64 "encoding/base64"
 	"encoding/json"
-	"fmt"
 	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -83,7 +82,7 @@ func CustomLog(vm *v8go.Isolate) *v8go.FunctionTemplate {
 		args := info.Args()
 		logdata := args[0].String()
 
-		fmt.Println("[JS_SCRIPT]\t" + logdata)
+		utils.Log.Info("[JS_SCRIPT]\t" + logdata)
 		return nil
 
 	})

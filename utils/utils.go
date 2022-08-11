@@ -95,6 +95,9 @@ func ExternalRequestTimer(req *http.Request) (*http.Response, error) {
 
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 	start = time.Now()
+
+	// NOTE: Below line is to ignore ssl certificate
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	res, err := http.DefaultTransport.RoundTrip(req)
 	if err != nil {
 		return res, err

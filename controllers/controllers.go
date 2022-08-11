@@ -132,7 +132,7 @@ func RequestTransformation(request *models.Request) error {
 
 	// Cast response to struct to make sure to malformation of the response [Validation]
 	requestresp := models.Response{}
-	utils.Log.Error(string(finalres[:]))
+	utils.Log.Info(string(finalres[:]))
 	err = json.Unmarshal(finalres, &requestresp)
 	if err != nil {
 		utils.Log.Error(err)
