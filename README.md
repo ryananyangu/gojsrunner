@@ -19,12 +19,12 @@ Recieve request
 -> Pipe to post send request script[Done]
 -> Get the response back and propagate it to the caller[Done]
 ------------------------------------------------------------------------------------------
--> Pass initial payment params back to the response builder for easier mapping of final feedback
--> Deal with caching
--> Deal with database inserts
--> XML convertion back to json
--> Service Type information on service config to state sync or async
--> Callback endpoint on dxl for async
+-> Pass initial payment params back to the response builder for easier mapping of final feedback (Cancelled)
+-> Deal with caching (In progress)
+-> Deal with database inserts (Done)
+-> XML convertion back to json (Inprogress)
+-> Service Type information on service config to state sync or async (Done)
+-> Callback endpoint on dxl for async (In Progress)
 -> Only if sync we post into the callbackQ else we only post in the database with async function
 -> Swagger setup on the dxl layer
 -> Add metabase for UI

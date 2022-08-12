@@ -3,7 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
+	"github.com/clbanning/mxj/v2"
 	"github.com/ryananyangu/gojsrunner/models"
 	"github.com/ryananyangu/gojsrunner/services"
 	"github.com/ryananyangu/gojsrunner/utils"
@@ -130,6 +132,18 @@ func RequestTransformation(request *models.Request) error {
 		return err
 	}
 
+	// If service type is xml based
+	if strings.EqualFold(request.ClientInfo.Format, "xml") {
+		converted, err := mxj.NewMapXml(finalres, false)
+		if err != nil {
+			utils.Log.Error(err)
+
+			finalres, _ = json.Marshal(converted.Old())
+		} else {
+			finalres, _ = json.Marshal(converted)
+		}
+	}
+
 	// Cast response to struct to make sure to malformation of the response [Validation]
 	requestresp := models.Response{}
 	utils.Log.Info(string(finalres[:]))
@@ -139,7 +153,12 @@ func RequestTransformation(request *models.Request) error {
 		return err
 	}
 
+	requestresp.Code = request.Transaction.Code
+
+	callbackres, _ := json.Marshal(requestresp)
+	// FIXME: If sync the responses have to be for final status
+
 	// Publish to ack Queue
-	return services.PublishPaymentAck(finalres)
+	return services.PublishPaymentAck(callbackres)
 
 }

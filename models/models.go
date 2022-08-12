@@ -27,6 +27,8 @@ type ClientInfo struct {
 	ServiceURL            string              `json:"ServiceURL"  binding:"required"`
 	ServiceCountry        uint                `json:"ServiceCountry"  binding:"required"`
 	AppCountry            uint                `json:"AppCountry"  binding:"required"`
+	RequestType           string              `json:"type" gorm:"type,omitempty" binding:"required"`
+	Format                string              `json:"Format" gorm:"Format,omitempty" binding:"required"`
 }
 
 // Incomming payload from Payments Queue

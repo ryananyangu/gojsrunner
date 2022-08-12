@@ -45,18 +45,26 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			request := models.Request{}
-			if err := json.Unmarshal(d.Body, &request); err != nil {
-				// Will not have acknowledge hence messages will still be on queue
-				utils.Log.Error(err, d.Body)
-				continue
+			switch d.RoutingKey {
+			case "payments.transaction":
+				request := models.Request{}
+				if err := json.Unmarshal(d.Body, &request); err != nil {
+					// Will not have acknowledge hence messages will still be on queue
+					utils.Log.Error(err, d.Body)
+					continue
+				}
+				if err := controllers.RequestTransformation(&request); err != nil {
+					utils.Log.Error(err)
+					continue
+				}
+				d.Ack(false)
+			case "payments.transaction.callback":
+				utils.Log.Error("Functionality not yet implementated")
+			default:
+				utils.Log.Error("Unknown routing key found", d.RoutingKey)
+
 			}
-			if err := controllers.RequestTransformation(&request); err != nil {
-				utils.Log.Error(err)
-				continue
-			}
-			d.Ack(false)
-			// d.RoutingKey
+
 		}
 	}()
 
