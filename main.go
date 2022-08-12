@@ -56,6 +56,7 @@ func main() {
 				continue
 			}
 			d.Ack(false)
+			// d.RoutingKey
 		}
 	}()
 

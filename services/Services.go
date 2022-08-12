@@ -125,10 +125,11 @@ func PublishPaymentAck(request []byte) error {
 	defer channelRabbitMQ.Close()
 
 	// FIXME: Q Params to be setup on envfile
-	channelRabbitMQ.PublishWithContext(context.Background(), "mobile.payments.ack",
-		"",    // routing key
-		false, // mandatory
-		false, // immediate
+	// FIXME: Routing key to be different between sync and async
+	channelRabbitMQ.PublishWithContext(context.Background(), "mobile.payments",
+		"payments.callback", // routing key
+		false,               // mandatory
+		false,               // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        request,
