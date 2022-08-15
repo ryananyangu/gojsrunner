@@ -46,7 +46,7 @@ func main() {
 	go func() {
 		for d := range msgs {
 			switch d.RoutingKey {
-			case "payments.transaction":
+			case "payments.transaction.main":
 				request := models.Request{}
 				if err := json.Unmarshal(d.Body, &request); err != nil {
 					// Will not have acknowledge hence messages will still be on queue
