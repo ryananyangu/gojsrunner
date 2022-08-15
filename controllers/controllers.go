@@ -159,6 +159,6 @@ func RequestTransformation(request *models.Request) error {
 	// FIXME: If sync the responses have to be for final status
 
 	// Publish to ack Queue
-	return services.PublishPaymentAck(callbackres)
+	return services.PublishPaymentAck(callbackres, utils.TRX_CALLBACK_RTNG_KEY)
 
 }

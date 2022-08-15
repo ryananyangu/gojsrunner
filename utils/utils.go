@@ -3,7 +3,7 @@ package utils
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
@@ -19,7 +19,7 @@ func ReadFile(file string) (string, error) {
 	}
 	defer openedFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(openedFile)
+	byteValue, _ := io.ReadAll(openedFile)
 
 	return string(byteValue[:]), nil
 
@@ -34,7 +34,7 @@ func Request(request string, headers map[string][]string, urlPath string, method
 
 	reqURL, _ := url.Parse(urlPath)
 
-	reqBody := ioutil.NopCloser(strings.NewReader(request))
+	reqBody := io.NopCloser(strings.NewReader(request))
 
 	req := &http.Request{
 		Method: method,
@@ -52,7 +52,7 @@ func Request(request string, headers map[string][]string, urlPath string, method
 		return "", err
 	}
 
-	data, _ := ioutil.ReadAll(res.Body)
+	data, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 
 	Log.Infof("SEND REQUEST | URL : %s | METHOD : %s | BODY : %s | STATUS : %s | HTTP_CODE : %d", urlPath, method, request, res.Status, res.StatusCode)

@@ -107,7 +107,7 @@ func CustomSHA256(vm *v8go.Isolate) *v8go.FunctionTemplate {
 
 }
 
-func PublishPaymentAck(request []byte) error {
+func PublishPaymentAck(request []byte, routingKey string) error {
 
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	connectRabbitMQ, err := amqp.Dial(amqpServerURL)
@@ -127,9 +127,9 @@ func PublishPaymentAck(request []byte) error {
 	// FIXME: Q Params to be setup on envfile
 	// FIXME: Routing key to be different between sync and async
 	channelRabbitMQ.PublishWithContext(context.Background(), "mobile.payments",
-		"payments.callback", // routing key
-		false,               // mandatory
-		false,               // immediate
+		routingKey, // routing key
+		false,      // mandatory
+		false,      // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        request,

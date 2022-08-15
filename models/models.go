@@ -57,11 +57,11 @@ type Transaction struct {
 // Response to be forwarded to payments.callbackXchange for sync
 // Status code only one changing depending on async or sync
 type Response struct {
-	ExternalCode      string    `json:"transactionId" binding:"required"`
-	Code              string    `json:"trackingId" binding:"required"`
-	RecievedDate      time.Time `json:"recievedDate" binding:"required"`
-	StatusCode        string    `json:"statusCode" binding:"required"`
-	StatusDescription string    `json:"statusDescription" binding:"required"`
+	TPCode            string    `json:"TPCode" binding:"required"`
+	Code              string    `json:"Code" binding:"required"`
+	RecievedDate      time.Time `json:"RecievedDate" binding:"required"`
+	StatusCode        string    `json:"StatusCode" binding:"required"`
+	StatusDescription string    `json:"StatusDescription" binding:"required"`
 }
 
 // JS Error defination and details
