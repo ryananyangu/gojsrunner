@@ -59,7 +59,11 @@ func main() {
 				}
 				d.Ack(false)
 			case utils.TRX_ASYNC_CALLBACK_RTNG_KEY:
-				utils.Log.Errorf("Functionality not yet implementated %s", d.Body)
+				if err := controllers.ResponseTransformation(string(d.Body[:]), d.CorrelationId, ""); err != nil {
+					utils.Log.Error(err)
+					continue
+				}
+				// utils.Log.Errorf("Functionality not yet implementated [%s - %s]", d.Body, d.CorrelationId)
 				d.Ack(false)
 			default:
 				utils.Log.Errorf("Unknown routing key found %s - %s", d.RoutingKey, d.Body)

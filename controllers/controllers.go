@@ -91,19 +91,20 @@ func RequestTransformation(request *models.Request) error {
 		return err
 	}
 
-	// If service type is xml based convert response to json
-	finalres := []byte{}
+	// FIXME: If service type is xml based convert response to json
 	if strings.EqualFold(request.ClientInfo.Format, "xml") {
 		converted, err := mxj.NewMapXml([]byte(serviceResponse), false)
 		if err != nil {
 			utils.Log.Error(err)
-			finalres, _ = json.Marshal(converted.Old())
+			finalres, _ := json.Marshal(converted.Old())
+			serviceResponse = string(finalres[:])
 		} else {
-			finalres, _ = json.Marshal(converted)
+			finalres, _ := json.Marshal(converted)
+			serviceResponse = string(finalres[:])
 		}
 	}
 	response := map[string]interface{}{}
-	if err := json.Unmarshal(finalres, &response); err != nil {
+	if err := json.Unmarshal([]byte(serviceResponse), &response); err != nil {
 		utils.Log.Error(err)
 		return err
 	}
@@ -115,7 +116,6 @@ func RequestTransformation(request *models.Request) error {
 }
 
 func ResponseTransformation(response, serviceCode, code string) error {
-	// Prepare response processing script
 	ResScriptFile := fmt.Sprintf("res_%s.js", serviceCode)
 	resScriptContent, err := utils.ReadFile("wrapperscripts/" + ResScriptFile)
 	if err != nil {

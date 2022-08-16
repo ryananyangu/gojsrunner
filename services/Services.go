@@ -27,7 +27,7 @@ func RunCode() *v8go.Context {
 	global.Set("btoa", CustomBtoa(vm), v8go.ReadOnly)
 	global.Set("log", CustomLog(vm), v8go.ReadOnly)
 	global.Set("SHA256", CustomSHA256(vm), v8go.ReadOnly)
-	global.Set("searchTrx", CustomSHA256(vm), v8go.ReadOnly)
+	global.Set("searchTrx", SearchTrx(vm), v8go.ReadOnly)
 
 	return v8go.NewContext(vm, global)
 }
@@ -104,7 +104,7 @@ func CustomLog(vm *v8go.Isolate) *v8go.FunctionTemplate {
 		args := info.Args()
 		logdata := args[0].String()
 
-		utils.Log.Info("[JS_SCRIPT]\t" + logdata)
+		utils.Log.Info("[JS_SCRIPT] " + logdata)
 		return nil
 
 	})
@@ -162,7 +162,7 @@ func PublishPaymentAck(request []byte, routingKey string) error {
 }
 
 func TrxSearchQ(column, value string) (string, error) {
-	query := fmt.Sprintf(`SELECT Code FROM Transactions WHERE '%s'='%s'`, column, value)
+	query := fmt.Sprintf(`SELECT Code FROM Transactions WHERE %s='%s'`, column, value)
 	res, err := utils.Db.Query(query)
 	rows := MAX_ROWS
 	result := ""
@@ -173,7 +173,7 @@ func TrxSearchQ(column, value string) (string, error) {
 
 	for res.Next() {
 
-		res.Scan(result)
+		res.Scan(&result)
 		if rows > MAX_ROWS {
 			return "", fmt.Errorf("search [%s=%s] has excess rows", column, value)
 		}
