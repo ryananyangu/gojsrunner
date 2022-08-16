@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	b64 "encoding/base64"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -12,6 +13,8 @@ import (
 	"github.com/ryananyangu/gojsrunner/utils"
 	"rogchap.com/v8go"
 )
+
+const MAX_ROWS = 1
 
 // NOTE: Handles all the custom implementations
 func RunCode() *v8go.Context {
@@ -24,8 +27,27 @@ func RunCode() *v8go.Context {
 	global.Set("btoa", CustomBtoa(vm), v8go.ReadOnly)
 	global.Set("log", CustomLog(vm), v8go.ReadOnly)
 	global.Set("SHA256", CustomSHA256(vm), v8go.ReadOnly)
+	global.Set("searchTrx", CustomSHA256(vm), v8go.ReadOnly)
 
 	return v8go.NewContext(vm, global)
+}
+
+func SearchTrx(vm *v8go.Isolate) *v8go.FunctionTemplate {
+	searchTrx := v8go.NewFunctionTemplate(vm, func(info *v8go.FunctionCallbackInfo) *v8go.Value {
+		args := info.Args()
+		column := args[0].String()
+		value := args[1].String()
+		response, err := TrxSearchQ(column, value)
+		if err != nil {
+			utils.Log.Error(err)
+			return nil
+		}
+		val, _ := v8go.NewValue(vm, response)
+		return val
+	})
+
+	return searchTrx
+
 }
 
 // NOTE: Custom Btoa function for js
@@ -136,5 +158,28 @@ func PublishPaymentAck(request []byte, routingKey string) error {
 		})
 
 	return nil
+
+}
+
+func TrxSearchQ(column, value string) (string, error) {
+	query := fmt.Sprintf(`SELECT Code FROM Transactions WHERE '%s'='%s'`, column, value)
+	res, err := utils.Db.Query(query)
+	rows := MAX_ROWS
+	result := ""
+
+	if err != nil {
+		return "", fmt.Errorf("err [%s], column [%s] value [%s]", err.Error(), column, value)
+	}
+
+	for res.Next() {
+
+		res.Scan(result)
+		if rows > MAX_ROWS {
+			return "", fmt.Errorf("search [%s=%s] has excess rows", column, value)
+		}
+		rows += 1
+	}
+
+	return result, nil
 
 }
