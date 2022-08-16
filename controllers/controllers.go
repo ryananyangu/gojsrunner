@@ -91,18 +91,32 @@ func RequestTransformation(request *models.Request) error {
 		return err
 	}
 
-	// FIXME: Handle xml based transformation to map here
-	// For json transform to map
+	// If service type is xml based convert response to json
+	finalres := []byte{}
+	if strings.EqualFold(request.ClientInfo.Format, "xml") {
+		converted, err := mxj.NewMapXml([]byte(serviceResponse), false)
+		if err != nil {
+			utils.Log.Error(err)
+			finalres, _ = json.Marshal(converted.Old())
+		} else {
+			finalres, _ = json.Marshal(converted)
+		}
+	}
 	response := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(serviceResponse), &response); err != nil {
+	if err := json.Unmarshal(finalres, &response); err != nil {
 		utils.Log.Error(err)
 		return err
 	}
 
+	return ResponseTransformation(serviceResponse, request.ClientInfo.ServiceCode, request.Transaction.Code)
+
 	//
 
+}
+
+func ResponseTransformation(response, serviceCode, code string) error {
 	// Prepare response processing script
-	ResScriptFile := fmt.Sprintf("res_%s.js", request.ClientInfo.ServiceCode)
+	ResScriptFile := fmt.Sprintf("res_%s.js", serviceCode)
 	resScriptContent, err := utils.ReadFile("wrapperscripts/" + ResScriptFile)
 	if err != nil {
 		utils.Log.Error(err)
@@ -115,8 +129,7 @@ func RequestTransformation(request *models.Request) error {
 
 	jsctx2.RunScript(resScriptContent, ResScriptFile)
 
-	// Pass the services response to function FIXME: Only works for json for now
-	resInjectScript := fmt.Sprintf(`main(%s)`, serviceResponse)
+	resInjectScript := fmt.Sprintf(`main(%s)`, response)
 
 	// Execute main function
 	resVal, err := jsctx2.RunScript(resInjectScript, ResScriptFile)
@@ -132,18 +145,6 @@ func RequestTransformation(request *models.Request) error {
 		return err
 	}
 
-	// If service type is xml based
-	if strings.EqualFold(request.ClientInfo.Format, "xml") {
-		converted, err := mxj.NewMapXml(finalres, false)
-		if err != nil {
-			utils.Log.Error(err)
-
-			finalres, _ = json.Marshal(converted.Old())
-		} else {
-			finalres, _ = json.Marshal(converted)
-		}
-	}
-
 	// Cast response to struct to make sure to malformation of the response [Validation]
 	requestresp := models.Response{}
 	utils.Log.Info(string(finalres[:]))
@@ -153,10 +154,18 @@ func RequestTransformation(request *models.Request) error {
 		return err
 	}
 
-	requestresp.Code = request.Transaction.Code
+	if strings.EqualFold(requestresp.Code, "") && strings.EqualFold(requestresp.Code, code) {
+		return fmt.Errorf("empty transaction id for response [%s]", response)
 
-	callbackres, _ := json.Marshal(requestresp)
-	// FIXME: If sync the responses have to be for final status
+	} else if strings.EqualFold(requestresp.Code, "") {
+		requestresp.Code = code
+	}
+
+	callbackres, err := json.Marshal(requestresp)
+	if err != nil {
+		utils.Log.Error(err)
+		return err
+	}
 
 	// Publish to ack Queue
 	return services.PublishPaymentAck(callbackres, utils.TRX_CALLBACK_RTNG_KEY)
