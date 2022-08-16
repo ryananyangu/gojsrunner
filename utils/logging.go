@@ -17,5 +17,5 @@ func init() {
 		})
 	logrus.SetOutput(os.Stderr)
 	logrus.SetReportCaller(true)
-	logrus.SetLevel(logrus.ErrorLevel)
+	logrus.SetLevel(logrus.InfoLevel)
 }
